@@ -10,6 +10,13 @@ Sistema de gerenciamento de serviços, receitas e eventos para clinica de fisiot
 - Visualização automática de saldo (entradas - saídas)
 - Histórico completo de todas as movimentações
 
+### Aba Histórico
+- 📅 **Calendário compacto** mostrando quais dias tiveram movimentação
+- 📊 **Extrato completo do mês** com todas as entradas e saídas
+- Navegação entre meses (anterior/próximo)
+- Resumo automático de entradas, saídas e saldo do mês
+- Subtotal de cada dia
+
 ### Aba Eventos
 - Crie eventos (workshops, treinamentos, etc)
 - Lista de presença de pacientes

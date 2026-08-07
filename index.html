@@ -300,6 +300,143 @@
       gap: 12px;
     }
     
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    
+    .calendar-header {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .calendar-day-name {
+      text-align: center;
+      font-weight: 500;
+      font-size: 12px;
+      color: #666;
+      padding: 8px;
+    }
+    
+    .calendar-day {
+      aspect-ratio: 1;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 4px;
+      text-align: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f9f9f9;
+      position: relative;
+      min-height: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .calendar-day:hover {
+      border-color: #378ADD;
+      background: #f0f7ff;
+    }
+    
+    .calendar-day.other-month {
+      color: #ccc;
+      background: #f5f5f5;
+    }
+    
+    .calendar-day.has-data {
+      border-color: #378ADD;
+      background: #e8f4fd;
+      font-weight: 500;
+    }
+    
+    .calendar-day.has-entrada {
+      border-color: #4CAF50;
+      background: #e8f5e9;
+    }
+    
+    .calendar-day.has-saida {
+      border-color: #f44336;
+      background: #ffebee;
+    }
+    
+    .calendar-day-number {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .calendar-day-indicator {
+      font-size: 10px;
+      color: #666;
+      line-height: 1;
+    }
+    
+    .day-detail {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .day-detail-header {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .day-detail-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 4px 0;
+      color: #666;
+    }
+    
+    .day-detail-item.entrada {
+      color: #4CAF50;
+    }
+    
+    .day-detail-item.saida {
+      color: #f44336;
+    }
+    
+    .day-detail-total {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 8px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    
+    .month-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .month-selector button {
+      padding: 8px 12px;
+    }
+    
+    .month-selector span {
+      font-weight: 500;
+      min-width: 150px;
+      text-align: center;
+    }
+    
     @media (max-width: 768px) {
       .form-row {
         grid-template-columns: 1fr;
@@ -323,6 +460,7 @@
 
     <div class="tabs">
       <button class="tab-btn active" onclick="mudarAba('financeiro')">Financeiro</button>
+      <button class="tab-btn" onclick="mudarAba('historico')">Histórico</button>
       <button class="tab-btn" onclick="mudarAba('eventos')">Eventos</button>
       <button class="tab-btn" onclick="mudarAba('backup')">Backup</button>
     </div>
@@ -385,7 +523,39 @@
       </div>
     </div>
 
-    <!-- ABA EVENTOS -->
+    <!-- ABA HISTÓRICO -->
+    <div id="historico" class="tab-content">
+      <div class="section">
+        <div class="month-selector">
+          <button onclick="mesAnterior()">← Mês Anterior</button>
+          <span id="mes-atual">Janeiro 2024</span>
+          <button onclick="mesProximo()">Próximo Mês →</button>
+        </div>
+
+        <div id="calendario" style="margin-bottom: 20px;"></div>
+      </div>
+
+      <div class="section">
+        <h3>Resumo do Mês</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div class="metric">
+            <div class="metric-label">Total Entradas</div>
+            <div class="metric-value accent" id="mes-entradas">R$ 0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Total Saídas</div>
+            <div class="metric-value danger" id="mes-saidas">R$ 0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Saldo do Mês</div>
+            <div class="metric-value success" id="mes-saldo">R$ 0</div>
+          </div>
+        </div>
+
+        <h3>Extrato do Mês</h3>
+        <div id="extrato-mes"></div>
+      </div>
+    </div>
     <div id="eventos" class="tab-content">
       <div class="section">
         <h3>Criar Novo Evento</h3>
@@ -464,6 +634,9 @@
       document.getElementById(aba).classList.add('active');
       event.target.classList.add('active');
       atualizarTela();
+      if (aba === 'historico') {
+        atualizarCalendario();
+      }
     }
 
     function salvarDados() {
@@ -645,6 +818,164 @@
       reader.readAsText(arquivo);
     }
 
+    let mesAtualData = new Date();
+
+    function mesAnterior() {
+      mesAtualData.setMonth(mesAtualData.getMonth() - 1);
+      atualizarCalendario();
+    }
+
+    function mesProximo() {
+      mesAtualData.setMonth(mesAtualData.getMonth() + 1);
+      atualizarCalendario();
+    }
+
+    function atualizarCalendario() {
+      const ano = mesAtualData.getFullYear();
+      const mes = mesAtualData.getMonth();
+      
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      
+      document.getElementById('mes-atual').textContent = `${meses[mes]} ${ano}`;
+      
+      const primeiroDia = new Date(ano, mes, 1).getDay();
+      const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+      const ultimoDiaAnterior = new Date(ano, mes, 0).getDate();
+      
+      let html = '<div class="calendar-header">';
+      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+      diasSemana.forEach(d => {
+        html += `<div class="calendar-day-name">${d}</div>`;
+      });
+      html += '</div>';
+      
+      html += '<div class="calendar">';
+      
+      // Dias do mês anterior
+      for (let i = primeiroDia - 1; i >= 0; i--) {
+        html += `<div class="calendar-day other-month">${ultimoDiaAnterior - i}</div>`;
+      }
+      
+      // Dias do mês atual
+      for (let dia = 1; dia <= ultimoDia; dia++) {
+        const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const entradas = dados.entradas.filter(e => e.data === dataStr);
+        const saidas = dados.saidas.filter(s => s.data === dataStr);
+        
+        let classe = 'calendar-day';
+        let indicador = '';
+        
+        if (entradas.length > 0 && saidas.length > 0) {
+          classe += ' has-data';
+          indicador = '↕️';
+        } else if (entradas.length > 0) {
+          classe += ' has-entrada';
+          indicador = '↑';
+        } else if (saidas.length > 0) {
+          classe += ' has-saida';
+          indicador = '↓';
+        }
+        
+        html += `<div class="${classe}">
+          <div class="calendar-day-number">${dia}</div>
+          ${indicador ? `<div class="calendar-day-indicator">${indicador}</div>` : ''}
+        </div>`;
+      }
+      
+      // Dias do próximo mês
+      const diasRestantes = 42 - (primeiroDia + ultimoDia);
+      for (let i = 1; i <= diasRestantes; i++) {
+        html += `<div class="calendar-day other-month">${i}</div>`;
+      }
+      
+      html += '</div>';
+      document.getElementById('calendario').innerHTML = html;
+      atualizarResumoMes();
+      atualizarExtratoMes();
+    }
+
+    function atualizarExtratoMes() {
+      const ano = mesAtualData.getFullYear();
+      const mes = mesAtualData.getMonth();
+      const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      
+      let html = '';
+      
+      for (let dia = 1; dia <= ultimoDia; dia++) {
+        const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const entradas = dados.entradas.filter(e => e.data === dataStr);
+        const saidas = dados.saidas.filter(s => s.data === dataStr);
+        
+        if (entradas.length === 0 && saidas.length === 0) continue;
+        
+        const totalEntradasDia = entradas.reduce((a, b) => a + b.valor, 0);
+        const totalSaidasDia = saidas.reduce((a, b) => a + b.valor, 0);
+        const saldoDia = totalEntradasDia - totalSaidasDia;
+        
+        const dataObj = new Date(dataStr + 'T00:00');
+        const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][dataObj.getDay()];
+        
+        html += `<div class="day-detail">
+          <div class="day-detail-header">${dia} (${diaSemana})</div>`;
+        
+        if (entradas.length > 0) {
+          entradas.forEach(e => {
+            html += `<div class="day-detail-item entrada">
+              <span>+ ${e.desc}</span>
+              <span>R$ ${e.valor.toFixed(2)}</span>
+            </div>`;
+          });
+        }
+        
+        if (saidas.length > 0) {
+          saidas.forEach(s => {
+            html += `<div class="day-detail-item saida">
+              <span>- ${s.desc}</span>
+              <span>R$ ${s.valor.toFixed(2)}</span>
+            </div>`;
+          });
+        }
+        
+        html += `<div class="day-detail-total" style="color: ${saldoDia >= 0 ? '#4CAF50' : '#f44336'};">
+          <span>Subtotal</span>
+          <span>R$ ${saldoDia.toFixed(2)}</span>
+        </div></div>`;
+      }
+      
+      if (html === '') {
+        html = '<p class="list-empty">Sem movimentação este mês</p>';
+      }
+      
+      document.getElementById('extrato-mes').innerHTML = html;
+    }
+
+    function atualizarResumoMes() {
+      const ano = mesAtualData.getFullYear();
+      const mes = mesAtualData.getMonth();
+      
+      const entradaDoMes = dados.entradas.filter(e => {
+        const dataE = new Date(e.data);
+        return dataE.getFullYear() === ano && dataE.getMonth() === mes;
+      }).reduce((a, b) => a + b.valor, 0);
+      
+      const saidaDoMes = dados.saidas.filter(s => {
+        const dataS = new Date(s.data);
+        return dataS.getFullYear() === ano && dataS.getMonth() === mes;
+      }).reduce((a, b) => a + b.valor, 0);
+      
+      const saldoMes = entradaDoMes - saidaDoMes;
+      
+      document.getElementById('mes-entradas').textContent = 'R$ ' + entradaDoMes.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      document.getElementById('mes-saidas').textContent = 'R$ ' + saidaDoMes.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      
+      const saldoEl = document.getElementById('mes-saldo');
+      saldoEl.textContent = 'R$ ' + saldoMes.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      saldoEl.style.color = saldoMes >= 0 ? '#4CAF50' : '#f44336';
+    }
+
     function atualizarTela() {
       const totalEntradas = dados.entradas.reduce((a, b) => a + b.valor, 0);
       const totalSaidas = dados.saidas.reduce((a, b) => a + b.valor, 0);
@@ -751,6 +1082,7 @@
     }
 
     atualizarTela();
+    atualizarCalendario();
   </script>
 </body>
 </html>
