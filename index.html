@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Fisio One</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .logo-area {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo-area img {
+      height: 80px;
+      object-fit: contain;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 12px;
+    }
+    
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+      color: #333;
+      border-bottom-color: #378ADD;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    
+    .metric {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    
+    .metric-value {
+      font-size: 20px;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .metric-value.success {
+      color: #4CAF50;
+    }
+    
+    .metric-value.danger {
+      color: #f44336;
+    }
+    
+    .metric-value.accent {
+      color: #378ADD;
+    }
+    
+    .section {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .section h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    input, textarea, select {
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #378ADD;
+      box-shadow: 0 0 0 3px rgba(55, 138, 221, 0.1);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: #f5f5f5;
+      border-color: #999;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-primary {
+      color: #378ADD;
+    }
+    
+    .btn-danger {
+      color: #f44336;
+    }
+    
+    .list-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #378ADD;
+    }
+    
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    
+    .list-item-content {
+      flex: 1;
+    }
+    
+    .list-item-content p {
+      margin: 0 0 4px;
+      font-size: 13px;
+    }
+    
+    .list-item-content .desc {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .list-item-content .meta {
+      color: #666;
+      font-size: 12px;
+    }
+    
+    .list-item-content .date {
+      color: #999;
+      font-size: 12px;
+    }
+    
+    .list-empty {
+      color: #aaa;
+      font-size: 13px;
+      padding: 12px 0;
+    }
+    
+    .evento-paciente {
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #4CAF50;
+    }
+    
+    .evento-paciente-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    
+    .evento-paciente-content p {
+      margin: 0 0 2px;
+      font-size: 13px;
+    }
+    
+    .evento-paciente-content .nome {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .evento-paciente-content .meta {
+      color: #666;
+      font-size: 12px;
+    }
+    
+    .evento-card {
+      padding: 16px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .evento-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .evento-card-title {
+      font-weight: 500;
+      font-size: 15px;
+      color: #333;
+    }
+    
+    .evento-card-date {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .evento-card-total {
+      font-weight: 500;
+      color: #4CAF50;
+      font-size: 14px;
+    }
+    
+    .evento-card-pacientes {
+      margin-bottom: 12px;
+    }
+    
+    .dois-colunas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .dois-colunas {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-area">
+      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAYGBgYHBgcICAcKCwoLCg8ODAwODxYQERAREBYiFRkVFRkVIh4kHhweJB42KiYmKjY+NDI0PkxERExfWl98fKcBBgYGBgcGBwgIBwoLCgsKDw4MDA4PFhAREBEQFiIVGRUVGRUiHiQeHB4kHjYqJiYqNj40MjQ+TERETF9aX3x8p//CABEIAoMEcgMBIgACEQEDEQH/xAAyAAEAAgMBAQAAAAAAAAAAAAAABQYCAwQBBwEBAAMBAQAAAAAAAAAAAAAAAAECAwQF/9oADAMBAAIQAxAAAAKqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9e7pjQkN9sohPbLZ11ZsppV1oFXWfBNbT+mt4ZJc1deVnhW4JAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAe+b0acpeR15YPvkWvJq2etMDzWbXJrrfvRuMWlEV6mURmcxIOLdNN7HKaYcnci8Jw2nHPpqafi8evje+U3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHo2dM5pzcEllj0edk4I6NJ3kgccuqV5eTzPfZh4roCQAAHvgz38xWT6oJfG0bql06c9k8je/Xl5oazY11qaWiub0sRFwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMpPya24mPBEXxlIzSw7vBXUAAAAAAAAAABngRKStXy057ZH88ttxVXGfgef0cRXUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD3q5pq2XbCc+q2fgz6QAAAAAAAAAAAAAAPd/P6ix8UXM7ckJ5v049fgSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABn7rIBIAAAAAAAAAAAAAAAAD3wb9AgEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD0L/xFNXIU1chTM+jw3x1wp4AAA6uWdIzlnYIAAAAAAGw1rR3lK8uWRSlzrZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAe+el3o94o4AAMzHyfgASZGLdkU9ZoI5iSI1IxwMzBYu4p63QRHAAA3XPkhT2L8AHRb6RsJOIvlHNZLES65Iglw8Kgk4wAPZohFv8ACopWKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHvnpd6P8AQYArqxiuLHwkVs17C30y50w77HD9BB4Y+HfsjAnYKdPIOcgzZdInQa4vAdFnqGROQN6pBgBlj0Fxo1xpwAABYtGmRKzZqzZSRgO2tmezQLpX+S0lNOwn+PuqRsy0i089fuZS2zWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPfPS91Sz0ckUcJHTyBs17C30y50w2W6mi5cED3GriteJVZ2CnTyDnIMulRtdYOUAFsgbDWzkA26vS60m71A5wAATe2VqpyWWtWUjouTjADO5U25FKnIOZJ/g54As6sCzydFHZw++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD3z0u9HvFHAAGzXsLfTLnTDLyamCmJ7WQ144+Qrs7BTp5BzkGS0rVbKVlcIsg+ialj2j9fGAASFnpEmcGu8R5V05tK/YZPgNlVyxFlrVmIyMk4wAzuVNuRStuoXilSNiKSsOog91p4CvgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA7uEAAHvg7eIG7SJXKIHVyg6OcdHOAHT3RAk4/AAAAAZdvAJjCKG3UADq5Rt1AB728IAbNYlM4gdHOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2bCPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0gI9ICPSAj0hwmIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADo7yIZdBytmw520am7w1Or05G3M52W00Mt5zPes43vScr3pOUB2byMe9Jyvd5zt2sxdXKHToMUlynOz9NbZmaG3UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdfdEDySjMzt6ojae+84lUd4bsuTMlcofM96OEd8jA7DXOQXead0dkbrBWOg5vAkd8V0nJYa70nklD9hu0cuBMxG3mJaKywJbn59ZlNQWZnIw+8kobbqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/EAAL/2gAMAwEAAgADAAAAIeMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAABABZEegTRNaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAABKmokAQxyjDCUNBZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAtTGF/sMEMII1500AiAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAABCmwcAAAAAAAAAEEPZgqiAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAPQAAAAAAAAAAAAAAAAAEGkmQAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAFBAANFAAAAFAAAAAADOOJCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAFPMMNBCMCEIBNJCAACKMKFHPPCACPDAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAFHABFPKAPNPDOEBAFOAAAIJNMPOPIFIAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAFPAAFPDAIHPAIBKAAGAABOFKAPOHPPIAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAFPAAFPKABNPIKKGAAKNDDMEOAPLCBMIAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAEIAAEIIMEAAEEAAAAAEIEAAAAIIIIEAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAABOMMMMMMMMMMMMMMMMMMMMMMMMMIAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAOOALDIABCCECCOLCADEMJCAAIAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAALLEOAEIIDOJBKOLMOLHFMPIAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/EAAL/2gAMAwEAAgADAAAAENPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPBHAQhYBzd/PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPed0wCSyACw8xv8PPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPOKQxfNvbLPDLK0bnxzvPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPN67HPPPPPPPPPPPPPLLdEvPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPLvPPPPPPPPPPPPPPPPPLNPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPOCAAJIPPPPIPPPPPPOPBONPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPKEPPOEPOMOPPNNPPPGDLEBMCOPPOONPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPKMPPPKHJLDADHCHPOFPPPJCHLEHBHLPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPKIPPPKNCBNAKHPDPKCPPPKLFPKKIAFHPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPKAPPPKCNAGCLMMPPPNMNLBOBPIOFMIHPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPHPPPHPLLLHPPLPPPPDPLPLPPLHLDPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPOMMMMMMMMMMMMMMMMMMMMMMMMMMPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPMOONNPMMOOOPNPEMMPNONNNPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPAGOJFMCHBNKLHOHCAOCJODPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPLPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP" alt="Fisio One" />
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="mudarAba('financeiro')">Financeiro</button>
+      <button class="tab-btn" onclick="mudarAba('eventos')">Eventos</button>
+      <button class="tab-btn" onclick="mudarAba('backup')">Backup</button>
+    </div>
+
+    <!-- ABA FINANCEIRO -->
+    <div id="financeiro" class="tab-content active">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Entradas</div>
+          <div class="metric-value accent" id="total-entradas">R$ 0</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Saídas</div>
+          <div class="metric-value danger" id="total-saidas">R$ 0</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Saldo</div>
+          <div class="metric-value success" id="total-saldo">R$ 0</div>
+        </div>
+      </div>
+
+      <div class="dois-colunas">
+        <div class="section">
+          <h3>➕ Entrada</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Dinheiro que vai entrar</p>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Data</label>
+            <input type="date" id="entrada-data" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Descrição</label>
+            <input type="text" id="entrada-desc" placeholder="Ex: Serviço realizado, venda" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Valor (R$)</label>
+            <input type="number" id="entrada-valor" placeholder="0.00" step="0.01" />
+          </div>
+          <button class="btn-primary" onclick="adicionarEntrada()" style="width: 100%;">Lançar Entrada</button>
+          <div id="entradas-list" style="margin-top: 16px;"></div>
+        </div>
+
+        <div class="section">
+          <h3>➖ Saída</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Dinheiro que vamos gastar</p>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Data</label>
+            <input type="date" id="saida-data" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Descrição</label>
+            <input type="text" id="saida-desc" placeholder="Ex: Aluguel, material, evento" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Valor (R$)</label>
+            <input type="number" id="saida-valor" placeholder="0.00" step="0.01" />
+          </div>
+          <button class="btn-danger" onclick="adicionarSaida()" style="width: 100%;">Lançar Saída</button>
+          <div id="saidas-list" style="margin-top: 16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA EVENTOS -->
+    <div id="eventos" class="tab-content">
+      <div class="section">
+        <h3>Criar Novo Evento</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Nome do Evento</label>
+            <input type="text" id="evento-nome" placeholder="Ex: Workshop, Treinamento" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Data</label>
+            <input type="date" id="evento-data" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="adicionarEvento()" style="width: 100%;">Criar Evento</button>
+      </div>
+
+      <div id="eventos-list"></div>
+    </div>
+
+    <!-- ABA BACKUP -->
+    <div id="backup" class="tab-content">
+      <div class="section">
+        <h3>Exportar Dados</h3>
+        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Salve um backup dos seus dados em seu computador</p>
+        <div class="dois-colunas">
+          <button class="btn-primary" onclick="exportarJSON()" style="width: 100%; padding: 12px;">
+            📥 Exportar JSON
+          </button>
+          <button class="btn-primary" onclick="exportarCSV()" style="width: 100%; padding: 12px;">
+            📊 Exportar CSV (Excel)
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Importar Dados</h3>
+        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Restaure um backup anterior</p>
+        <div class="form-group">
+          <input type="file" id="arquivo-import" accept=".json" />
+          <button class="btn-primary" onclick="importarJSON()" style="width: 100%; margin-top: 8px;">Importar JSON</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Resumo dos Dados</h3>
+        <div style="font-size: 14px; line-height: 1.8;">
+          <p>📋 Serviços: <strong id="count-servicos">0</strong></p>
+          <p>💰 Despesas: <strong id="count-despesas">0</strong></p>
+          <p>🎯 Eventos: <strong id="count-eventos">0</strong></p>
+          <p>👥 Total de Pacientes (eventos): <strong id="count-pacientes">0</strong></p>
+          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 12px 0;">
+          <p style="color: #666; font-size: 12px;">Última atualização: <strong id="ultima-atualizacao">-</strong></p>
+        </div>
+      </div>
+
+      <div class="section" style="background: #fff3cd; border-color: #ffc107;">
+        <h3 style="color: #856404;">⚠️ Atenção</h3>
+        <p style="color: #856404; font-size: 13px;">
+          Os dados são salvos localmente no seu navegador. Se limpar o cache/cookies, os dados serão perdidos. 
+          Faça backups regulares!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dados = {
+      entradas: JSON.parse(localStorage.getItem('entradas') || '[]'),
+      saidas: JSON.parse(localStorage.getItem('saidas') || '[]'),
+      eventos: JSON.parse(localStorage.getItem('eventos') || '[]')
+    };
+
+    function mudarAba(aba) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(aba).classList.add('active');
+      event.target.classList.add('active');
+      atualizarTela();
+    }
+
+    function salvarDados() {
+      localStorage.setItem('entradas', JSON.stringify(dados.entradas));
+      localStorage.setItem('saidas', JSON.stringify(dados.saidas));
+      localStorage.setItem('eventos', JSON.stringify(dados.eventos));
+      atualizarTela();
+    }
+
+    function adicionarEntrada() {
+      const data = document.getElementById('entrada-data').value;
+      const desc = document.getElementById('entrada-desc').value;
+      const valor = parseFloat(document.getElementById('entrada-valor').value);
+
+      if (data && desc && valor > 0) {
+        dados.entradas.push({
+          id: Date.now(),
+          data,
+          desc,
+          valor
+        });
+        document.getElementById('entrada-data').value = '';
+        document.getElementById('entrada-desc').value = '';
+        document.getElementById('entrada-valor').value = '';
+        salvarDados();
+      }
+    }
+
+    function adicionarSaida() {
+      const data = document.getElementById('saida-data').value;
+      const desc = document.getElementById('saida-desc').value;
+      const valor = parseFloat(document.getElementById('saida-valor').value);
+
+      if (data && desc && valor > 0) {
+        dados.saidas.push({
+          id: Date.now(),
+          data,
+          desc,
+          valor
+        });
+        document.getElementById('saida-data').value = '';
+        document.getElementById('saida-desc').value = '';
+        document.getElementById('saida-valor').value = '';
+        salvarDados();
+      }
+    }
+
+    function adicionarEvento() {
+      const nome = document.getElementById('evento-nome').value;
+      const data = document.getElementById('evento-data').value;
+
+      if (nome && data) {
+        dados.eventos.push({
+          id: Date.now(),
+          nome,
+          data,
+          pacientes: []
+        });
+        document.getElementById('evento-nome').value = '';
+        document.getElementById('evento-data').value = '';
+        salvarDados();
+      }
+    }
+
+    function adicionarPacienteEvento(eventoId) {
+      const nome = document.getElementById('pac-nome-' + eventoId).value;
+      const telefone = document.getElementById('pac-telefone-' + eventoId).value;
+      const servico = document.getElementById('pac-servico-' + eventoId).value;
+      const valor = parseFloat(document.getElementById('pac-valor-' + eventoId).value);
+
+      if (nome && telefone && servico && valor > 0) {
+        const evento = dados.eventos.find(e => e.id === eventoId);
+        if (evento) {
+          evento.pacientes.push({
+            id: Date.now(),
+            nome,
+            telefone,
+            servico,
+            valor
+          });
+          document.getElementById('pac-nome-' + eventoId).value = '';
+          document.getElementById('pac-telefone-' + eventoId).value = '';
+          document.getElementById('pac-servico-' + eventoId).value = '';
+          document.getElementById('pac-valor-' + eventoId).value = '';
+          salvarDados();
+        }
+      }
+    }
+
+    function deletarEntrada(id) {
+      dados.entradas = dados.entradas.filter(e => e.id !== id);
+      salvarDados();
+    }
+
+    function deletarSaida(id) {
+      dados.saidas = dados.saidas.filter(s => s.id !== id);
+      salvarDados();
+    }
+
+    function deletarEvento(id) {
+      dados.eventos = dados.eventos.filter(e => e.id !== id);
+      salvarDados();
+    }
+
+    function deletarPacienteEvento(eventoId, pacId) {
+      const evento = dados.eventos.find(e => e.id === eventoId);
+      if (evento) {
+        evento.pacientes = evento.pacientes.filter(p => p.id !== pacId);
+        salvarDados();
+      }
+    }
+
+    function exportarJSON() {
+      const dataStr = JSON.stringify(dados, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `backup-fisio-one-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportarCSV() {
+      let csv = 'ENTRADAS\n';
+      csv += 'Data,Descrição,Valor\n';
+      dados.entradas.forEach(e => {
+        csv += `"${e.data}","${e.desc}","${e.valor}"\n`;
+      });
+      
+      csv += '\n\nSAÍDAS\n';
+      csv += 'Data,Descrição,Valor\n';
+      dados.saidas.forEach(s => {
+        csv += `"${s.data}","${s.desc}","${s.valor}"\n`;
+      });
+
+      csv += '\n\nEVENTOS\n';
+      csv += 'Evento,Data,Paciente,Telefone,Serviço,Valor\n';
+      dados.eventos.forEach(e => {
+        e.pacientes.forEach(p => {
+          csv += `"${e.nome}","${e.data}","${p.nome}","${p.telefone}","${p.servico}","${p.valor}"\n`;
+        });
+      });
+
+      const dataBlob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `backup-fisio-one-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importarJSON() {
+      const arquivo = document.getElementById('arquivo-import').files[0];
+      if (!arquivo) {
+        alert('Selecione um arquivo JSON');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dadosImportados = JSON.parse(e.target.result);
+          if (dadosImportados.entradas && dadosImportados.saidas && dadosImportados.eventos) {
+            dados.entradas = dadosImportados.entradas;
+            dados.saidas = dadosImportados.saidas;
+            dados.eventos = dadosImportados.eventos;
+            salvarDados();
+            alert('Dados importados com sucesso!');
+            document.getElementById('arquivo-import').value = '';
+          } else {
+            alert('Arquivo inválido');
+          }
+        } catch (err) {
+          alert('Erro ao importar: ' + err.message);
+        }
+      };
+      reader.readAsText(arquivo);
+    }
+
+    function atualizarTela() {
+      const totalEntradas = dados.entradas.reduce((a, b) => a + b.valor, 0);
+      const totalSaidas = dados.saidas.reduce((a, b) => a + b.valor, 0);
+      const saldo = totalEntradas - totalSaidas;
+
+      document.getElementById('total-entradas').textContent = 'R$ ' + totalEntradas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      document.getElementById('total-saidas').textContent = 'R$ ' + totalSaidas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      
+      const saldoEl = document.getElementById('total-saldo');
+      saldoEl.textContent = 'R$ ' + saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      saldoEl.style.color = saldo >= 0 ? '#4CAF50' : '#f44336';
+
+      document.getElementById('entradas-list').innerHTML = dados.entradas.length ? dados.entradas
+        .sort((a, b) => new Date(b.data) - new Date(a.data))
+        .map(e => `
+          <div class="list-item">
+            <div class="list-item-header">
+              <div class="list-item-content">
+                <p class="desc">${e.desc}</p>
+                <p class="date">${new Date(e.data + 'T00:00').toLocaleDateString('pt-BR')} - R$ ${e.valor.toFixed(2)}</p>
+              </div>
+              <button style="background: none; border: none; cursor: pointer; color: #f44336;" onclick="deletarEntrada(${e.id})">✕</button>
+            </div>
+          </div>
+        `).join('') : '<p class="list-empty">Nenhuma entrada registrada</p>';
+
+      document.getElementById('saidas-list').innerHTML = dados.saidas.length ? dados.saidas
+        .sort((a, b) => new Date(b.data) - new Date(a.data))
+        .map(s => `
+          <div class="list-item">
+            <div class="list-item-header">
+              <div class="list-item-content">
+                <p class="desc">${s.desc}</p>
+                <p class="date">${new Date(s.data + 'T00:00').toLocaleDateString('pt-BR')} - R$ ${s.valor.toFixed(2)}</p>
+              </div>
+              <button style="background: none; border: none; cursor: pointer; color: #f44336;" onclick="deletarSaida(${s.id})">✕</button>
+            </div>
+          </div>
+        `).join('') : '<p class="list-empty">Nenhuma saída registrada</p>';
+
+      document.getElementById('eventos-list').innerHTML = dados.eventos.length ? dados.eventos
+        .sort((a, b) => new Date(b.data) - new Date(a.data))
+        .map(e => {
+          const totalEvento = e.pacientes.reduce((a, b) => a + b.valor, 0);
+          return `
+            <div class="evento-card">
+              <div class="evento-card-header">
+                <div>
+                  <div class="evento-card-title">${e.nome}</div>
+                  <div class="evento-card-date">${new Date(e.data + 'T00:00').toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div>
+                  <div class="evento-card-total">Total: R$ ${totalEvento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                  <button style="background: none; border: none; cursor: pointer; color: #f44336; margin-top: 4px;" onclick="deletarEvento(${e.id})">Deletar evento</button>
+                </div>
+              </div>
+
+              <div class="section" style="background: transparent; border: none; padding: 12px 0; margin: 0; border-top: 1px solid #e0e0e0;">
+                <h3 style="font-size: 14px;">Lista de Presença</h3>
+                <div class="dois-colunas" style="margin-bottom: 12px;">
+                  <div class="form-group">
+                    <input type="text" id="pac-nome-${e.id}" placeholder="Nome do paciente" />
+                  </div>
+                  <div class="form-group">
+                    <input type="tel" id="pac-telefone-${e.id}" placeholder="Telefone" />
+                  </div>
+                </div>
+                <div class="dois-colunas" style="margin-bottom: 12px;">
+                  <div class="form-group">
+                    <input type="text" id="pac-servico-${e.id}" placeholder="Serviço comprado" />
+                  </div>
+                  <div class="form-group">
+                    <input type="number" id="pac-valor-${e.id}" placeholder="Valor" step="0.01" />
+                  </div>
+                </div>
+                <button class="btn-primary" onclick="adicionarPacienteEvento(${e.id})" style="width: 100%; margin-bottom: 12px;">Adicionar Paciente</button>
+
+                <div class="evento-card-pacientes">
+                  ${e.pacientes.length ? e.pacientes.map(p => `
+                    <div class="evento-paciente">
+                      <div class="evento-paciente-header">
+                        <div class="evento-paciente-content">
+                          <p class="nome">${p.nome}</p>
+                          <p class="meta">Tel: ${p.telefone}</p>
+                          <p class="meta">Serviço: ${p.servico} - R$ ${p.valor.toFixed(2)}</p>
+                        </div>
+                        <button style="background: none; border: none; cursor: pointer; color: #f44336;" onclick="deletarPacienteEvento(${e.id}, ${p.id})">✕</button>
+                      </div>
+                    </div>
+                  `).join('') : '<p class="list-empty">Nenhum paciente adicionado</p>'}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('') : '<p class="list-empty">Nenhum evento criado</p>';
+
+      // Atualizar resumo de dados
+      const totalPacientes = dados.eventos.reduce((a, e) => a + e.pacientes.length, 0);
+      document.getElementById('count-servicos').textContent = dados.entradas.length;
+      document.getElementById('count-despesas').textContent = dados.saidas.length;
+      document.getElementById('count-eventos').textContent = dados.eventos.length;
+      document.getElementById('count-pacientes').textContent = totalPacientes;
+      document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
+    }
+
+    atualizarTela();
+  </script>
+</body>
+</html>

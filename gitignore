@@ -1,0 +1,7 @@
+# Backups locais (não suba para GitHub)
+*.json
+*.csv
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
