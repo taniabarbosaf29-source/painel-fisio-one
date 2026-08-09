@@ -463,7 +463,6 @@
       <button class="tab-btn active" onclick="mudarAba('financeiro')">Financeiro</button>
       <button class="tab-btn" onclick="mudarAba('historico')">Histórico</button>
       <button class="tab-btn" onclick="mudarAba('eventos')">Eventos</button>
-      <button class="tab-btn" onclick="mudarAba('backup')">Backup</button>
     </div>
 
     <!-- ABA FINANCEIRO -->
@@ -576,51 +575,6 @@
       </div>
 
       <div id="eventos-list"></div>
-    </div>
-
-    <!-- ABA BACKUP -->
-    <div id="backup" class="tab-content">
-      <div class="section">
-        <h3>Exportar Dados</h3>
-        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Salve um backup dos seus dados em seu computador</p>
-        <div class="dois-colunas">
-          <button class="btn-primary" onclick="exportarJSON()" style="width: 100%; padding: 12px;">
-            📥 Exportar JSON
-          </button>
-          <button class="btn-primary" onclick="exportarCSV()" style="width: 100%; padding: 12px;">
-            📊 Exportar CSV (Excel)
-          </button>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3>Importar Dados</h3>
-        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Restaure um backup anterior</p>
-        <div class="form-group">
-          <input type="file" id="arquivo-import" accept=".json" />
-          <button class="btn-primary" onclick="importarJSON()" style="width: 100%; margin-top: 8px;">Importar JSON</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3>Resumo dos Dados</h3>
-        <div style="font-size: 14px; line-height: 1.8;">
-          <p>📋 Serviços: <strong id="count-servicos">0</strong></p>
-          <p>💰 Despesas: <strong id="count-despesas">0</strong></p>
-          <p>🎯 Eventos: <strong id="count-eventos">0</strong></p>
-          <p>👥 Total de Pacientes (eventos): <strong id="count-pacientes">0</strong></p>
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 12px 0;">
-          <p style="color: #666; font-size: 12px;">Última atualização: <strong id="ultima-atualizacao">-</strong></p>
-        </div>
-      </div>
-
-      <div class="section" style="background: #fff3cd; border-color: #ffc107;">
-        <h3 style="color: #856404;">⚠️ Atenção</h3>
-        <p style="color: #856404; font-size: 13px;">
-          Os dados são salvos localmente no seu navegador. Se limpar o cache/cookies, os dados serão perdidos. 
-          Faça backups regulares!
-        </p>
-      </div>
     </div>
   </div>
 
@@ -843,75 +797,6 @@
         
         salvarDados();
       }
-    }
-
-    function exportarJSON() {
-      const dataStr = JSON.stringify(dados, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `backup-fisio-one-${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportarCSV() {
-      let csv = 'ENTRADAS\n';
-      csv += 'Data,Descrição,Valor\n';
-      dados.entradas.forEach(e => {
-        csv += `"${e.data}","${e.desc}","${e.valor}"\n`;
-      });
-      
-      csv += '\n\nSAÍDAS\n';
-      csv += 'Data,Descrição,Valor\n';
-      dados.saidas.forEach(s => {
-        csv += `"${s.data}","${s.desc}","${s.valor}"\n`;
-      });
-
-      csv += '\n\nEVENTOS\n';
-      csv += 'Evento,Data,Paciente,Telefone,Serviço,Valor\n';
-      dados.eventos.forEach(e => {
-        e.pacientes.forEach(p => {
-          csv += `"${e.nome}","${e.data}","${p.nome}","${p.telefone}","${p.servico}","${p.valor}"\n`;
-        });
-      });
-
-      const dataBlob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `backup-fisio-one-${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importarJSON() {
-      const arquivo = document.getElementById('arquivo-import').files[0];
-      if (!arquivo) {
-        alert('Selecione um arquivo JSON');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const dadosImportados = JSON.parse(e.target.result);
-          if (dadosImportados.entradas && dadosImportados.saidas && dadosImportados.eventos) {
-            dados.entradas = dadosImportados.entradas;
-            dados.saidas = dadosImportados.saidas;
-            dados.eventos = dadosImportados.eventos;
-            salvarDados();
-            alert('Dados importados com sucesso!');
-            document.getElementById('arquivo-import').value = '';
-          } else {
-            alert('Arquivo inválido');
-          }
-        } catch (err) {
-          alert('Erro ao importar: ' + err.message);
-        }
-      };
-      reader.readAsText(arquivo);
     }
 
     let mesAtualData = new Date();
@@ -1167,14 +1052,6 @@
             </div>
           `;
         }).join('') : '<p class="list-empty">Nenhum evento criado</p>';
-
-      // Atualizar resumo de dados
-      const totalPacientes = dados.eventos.reduce((a, e) => a + e.pacientes.length, 0);
-      document.getElementById('count-servicos').textContent = dados.entradas.length;
-      document.getElementById('count-despesas').textContent = dados.saidas.length;
-      document.getElementById('count-eventos').textContent = dados.eventos.length;
-      document.getElementById('count-pacientes').textContent = totalPacientes;
-      document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
     }
 
     atualizarTela();

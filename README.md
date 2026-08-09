@@ -49,23 +49,21 @@ Sistema de gerenciamento de serviços, receitas e eventos para clinica de fisiot
 
 ## 💾 Dados e Backup
 
-Os dados são salvos automaticamente no navegador (localStorage).
+**Automático com Firebase!** ☁️
 
-### 📥 Exportar Dados
-- **JSON**: Faça backup completo dos dados (use para restaurar depois)
-- **CSV**: Exporte para Excel com histórico de serviços, despesas e eventos
+Todos os dados são salvos automaticamente:
+- No navegador (localStorage) - funcionamento rápido
+- No Firebase - sincronização e backup em nuvem
 
-### 📤 Importar Dados
-- Restaure um backup anterior carregando um arquivo JSON
+Não precisa fazer backup manual - Firebase cuida de tudo! 🔄
 
-### ⚠️ Importante
-Se limpar o cache/cookies do navegador, os dados serão perdidos. **Faça backups regulares!**
+## 🔄 Sincronização em Tempo Real
 
-### Como usar Backup
-1. Clique em "Backup" no painel
-2. Clique em "Exportar JSON" para fazer backup
-3. Salve o arquivo em local seguro (Google Drive, OneDrive, etc)
-4. Para restaurar, volte à aba "Backup" e importe o arquivo JSON
+**Com Firebase integrado:**
+- ✅ Todos os fisios veem as mesmas informações
+- ✅ Mudanças aparecem instantaneamente 
+- ✅ Funciona offline e sincroniza depois
+- ✅ Backup automático em nuvem
 
 ## 🔧 Personalização
 
