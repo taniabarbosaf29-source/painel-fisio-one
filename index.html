@@ -579,7 +579,14 @@
   </div>
 
   <script>
-    // Firebase Config
+    // Dados salvos localmente
+    const dados = {
+      entradas: JSON.parse(localStorage.getItem('entradas') || '[]'),
+      saidas: JSON.parse(localStorage.getItem('saidas') || '[]'),
+      eventos: JSON.parse(localStorage.getItem('eventos') || '[]')
+    };
+
+    // Firebase Config - será inicializado depois que os scripts carregarem
     const firebaseConfig = {
       apiKey: "AIzaSyB-V-Whn-EdFp7ITU884Qv9xs2AAYDgf8k",
       authDomain: "fisio-one.firebaseapp.com",
@@ -590,15 +597,24 @@
       appId: "1:119123174059:web:03de1f6dfda3270bf684dee"
     };
 
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    
-    // Flag para evitar loop infinito de sincronização
+    let database = null;
     let sincronizando = false;
 
-    // Carregar dados do Firebase ao abrir o painel
+    // Inicializar Firebase quando os scripts carregarem
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (typeof firebase !== 'undefined') {
+          firebase.initializeApp(firebaseConfig);
+          database = firebase.database();
+          carregarDoFirebase();
+          escutarMudancas();
+        }
+      }, 500);
+    });
+
+    // Carregar dados do Firebase
     function carregarDoFirebase() {
+      if (!database) return;
       database.ref('dados').once('value', (snapshot) => {
         if (snapshot.exists()) {
           const dadosFirebase = snapshot.val();
@@ -611,9 +627,9 @@
       });
     }
 
-    // Sincronizar dados para Firebase
+    // Sincronizar para Firebase
     function sincronizarParaFirebase() {
-      if (sincronizando) return;
+      if (sincronizando || !database) return;
       sincronizando = true;
       
       database.ref('dados').set(dados, (error) => {
@@ -624,12 +640,12 @@
       });
     }
 
-    // Escutar mudanças em tempo real do Firebase
+    // Escutar mudanças em tempo real
     function escutarMudancas() {
+      if (!database) return;
       database.ref('dados').on('value', (snapshot) => {
         if (snapshot.exists() && !sincronizando) {
           const dadosFirebase = snapshot.val();
-          // Só atualiza se os dados forem diferentes
           if (JSON.stringify(dados) !== JSON.stringify(dadosFirebase)) {
             dados.entradas = dadosFirebase.entradas || [];
             dados.saidas = dadosFirebase.saidas || [];
@@ -640,20 +656,6 @@
         }
       });
     }
-
-    // Carregar dados ao iniciar
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        carregarDoFirebase();
-        escutarMudancas();
-      }, 500);
-    });
-  </script>
-    const dados = {
-      entradas: JSON.parse(localStorage.getItem('entradas') || '[]'),
-      saidas: JSON.parse(localStorage.getItem('saidas') || '[]'),
-      eventos: JSON.parse(localStorage.getItem('eventos') || '[]')
-    };
 
     function mudarAba(aba) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
