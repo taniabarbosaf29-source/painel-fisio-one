@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Fisio One</title>
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
   <style>
     * {
       margin: 0;
@@ -621,6 +625,76 @@
   </div>
 
   <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-V-Whn-EdFp7ITU884Qv9xs2AAYDgf8k",
+      authDomain: "fisio-one.firebaseapp.com",
+      databaseURL: "https://fisio-one-default-rtdb.firebaseio.com",
+      projectId: "fisio-one",
+      storageBucket: "fisio-one.firebasestorage.app",
+      messagingSenderId: "119123174059",
+      appId: "1:119123174059:web:03de1f6dfda3270bf684dee"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // Flag para evitar loop infinito de sincronização
+    let sincronizando = false;
+
+    // Carregar dados do Firebase ao abrir o painel
+    function carregarDoFirebase() {
+      database.ref('dados').once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          const dadosFirebase = snapshot.val();
+          dados.entradas = dadosFirebase.entradas || [];
+          dados.saidas = dadosFirebase.saidas || [];
+          dados.eventos = dadosFirebase.eventos || [];
+          atualizarTela();
+          atualizarCalendario();
+        }
+      });
+    }
+
+    // Sincronizar dados para Firebase
+    function sincronizarParaFirebase() {
+      if (sincronizando) return;
+      sincronizando = true;
+      
+      database.ref('dados').set(dados, (error) => {
+        sincronizando = false;
+        if (error) {
+          console.error('Erro ao sincronizar:', error);
+        }
+      });
+    }
+
+    // Escutar mudanças em tempo real do Firebase
+    function escutarMudancas() {
+      database.ref('dados').on('value', (snapshot) => {
+        if (snapshot.exists() && !sincronizando) {
+          const dadosFirebase = snapshot.val();
+          // Só atualiza se os dados forem diferentes
+          if (JSON.stringify(dados) !== JSON.stringify(dadosFirebase)) {
+            dados.entradas = dadosFirebase.entradas || [];
+            dados.saidas = dadosFirebase.saidas || [];
+            dados.eventos = dadosFirebase.eventos || [];
+            atualizarTela();
+            atualizarCalendario();
+          }
+        }
+      });
+    }
+
+    // Carregar dados ao iniciar
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        carregarDoFirebase();
+        escutarMudancas();
+      }, 500);
+    });
+  </script>
     const dados = {
       entradas: JSON.parse(localStorage.getItem('entradas') || '[]'),
       saidas: JSON.parse(localStorage.getItem('saidas') || '[]'),
@@ -642,6 +716,10 @@
       localStorage.setItem('entradas', JSON.stringify(dados.entradas));
       localStorage.setItem('saidas', JSON.stringify(dados.saidas));
       localStorage.setItem('eventos', JSON.stringify(dados.eventos));
+      
+      // Sincronizar com Firebase
+      sincronizarParaFirebase();
+      
       atualizarTela();
     }
 
@@ -709,13 +787,25 @@
       if (nome && telefone && servico && valor > 0) {
         const evento = dados.eventos.find(e => e.id === eventoId);
         if (evento) {
+          const pacienteId = Date.now();
           evento.pacientes.push({
-            id: Date.now(),
+            id: pacienteId,
             nome,
             telefone,
             servico,
             valor
           });
+          
+          // Adicionar automaticamente ao Financeiro (Entradas) no dia do evento
+          dados.entradas.push({
+            id: pacienteId + 1,
+            data: evento.data,
+            desc: `${evento.nome} - ${nome} (${servico})`,
+            valor: valor,
+            eventoId: eventoId,
+            pacienteId: pacienteId
+          });
+          
           document.getElementById('pac-nome-' + eventoId).value = '';
           document.getElementById('pac-telefone-' + eventoId).value = '';
           document.getElementById('pac-servico-' + eventoId).value = '';
@@ -736,6 +826,9 @@
     }
 
     function deletarEvento(id) {
+      // Remover também as entradas no Financeiro que foram criadas por este evento
+      dados.entradas = dados.entradas.filter(e => e.eventoId !== id);
+      
       dados.eventos = dados.eventos.filter(e => e.id !== id);
       salvarDados();
     }
@@ -744,6 +837,10 @@
       const evento = dados.eventos.find(e => e.id === eventoId);
       if (evento) {
         evento.pacientes = evento.pacientes.filter(p => p.id !== pacId);
+        
+        // Remover também do Financeiro (entrada que foi criada automaticamente)
+        dados.entradas = dados.entradas.filter(e => !(e.eventoId === eventoId && e.pacienteId === pacId));
+        
         salvarDados();
       }
     }
@@ -853,7 +950,7 @@
       
       // Dias do mês anterior
       for (let i = primeiroDia - 1; i >= 0; i--) {
-        html += `<div class="calendar-day other-month">${ultimoDiaAnterior - i}</div>`;
+        html += `<div class="calendar-day other-month"></div>`;
       }
       
       // Dias do mês atual
@@ -877,15 +974,15 @@
         }
         
         html += `<div class="${classe}">
-          <div class="calendar-day-number">${dia}</div>
-          ${indicador ? `<div class="calendar-day-indicator">${indicador}</div>` : ''}
+          <div style="font-weight: 500;">${dia}</div>
+          ${indicador ? `<div style="font-size: 9px;">${indicador}</div>` : ''}
         </div>`;
       }
       
       // Dias do próximo mês
       const diasRestantes = 42 - (primeiroDia + ultimoDia);
       for (let i = 1; i <= diasRestantes; i++) {
-        html += `<div class="calendar-day other-month">${i}</div>`;
+        html += `<div class="calendar-day other-month"></div>`;
       }
       
       html += '</div>';
