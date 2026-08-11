@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Fisio One</title>
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+  <!-- Firebase (versão compatível com scripts inline) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     * {
       margin: 0;
@@ -687,6 +687,44 @@
         }
       }, (error) => {
         console.error('❌ Erro ao escutar:', error);
+      });
+
+      // Sincronização periódica a cada 3 segundos como fallback
+      setInterval(() => {
+        if (database && !sincronizando) {
+          database.ref('dados').once('value', (snapshot) => {
+            if (snapshot.exists() && !sincronizando) {
+              const dadosFirebase = snapshot.val();
+              if (JSON.stringify(dados) !== JSON.stringify(dadosFirebase)) {
+                console.log('🔄 Sincronização periódica: atualizando...');
+                dados.entradas = dadosFirebase.entradas || [];
+                dados.saidas = dadosFirebase.saidas || [];
+                dados.eventos = dadosFirebase.eventos || [];
+                atualizarTela();
+                atualizarCalendario();
+              }
+            }
+          });
+        }
+      }, 3000);
+
+      // Sincronizar quando voltar para a aba
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          console.log('👁️ Aba focada - recarregando dados do Firebase');
+          if (database && !sincronizando) {
+            database.ref('dados').once('value', (snapshot) => {
+              if (snapshot.exists()) {
+                const dadosFirebase = snapshot.val();
+                dados.entradas = dadosFirebase.entradas || [];
+                dados.saidas = dadosFirebase.saidas || [];
+                dados.eventos = dadosFirebase.eventos || [];
+                atualizarTela();
+                atualizarCalendario();
+              }
+            });
+          }
+        }
       });
     }
 
