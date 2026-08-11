@@ -579,7 +579,7 @@
   </div>
 
   <script>
-    // Dados salvos localmente (vai ser sobrescrito pelo Firebase depois)
+    // Dados em memória (não localStorage por enquanto)
     let dados = {
       entradas: [],
       saidas: [],
@@ -599,33 +599,33 @@
 
     let database = null;
     let sincronizando = false;
+    let firebaseCarregado = false;
 
-    // Inicializar Firebase e carregar dados quando estiver pronto
-    function inicializarFirebase() {
-      try {
-        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-          database = firebase.database();
-          console.log('Firebase inicializado com sucesso');
-          
-          // Carregar dados do Firebase
-          carregarDoFirebase();
-          // Escutar mudanças em tempo real
-          escutarMudancas();
+    // Inicializar Firebase
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (typeof firebase !== 'undefined') {
+          try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('✅ Firebase inicializado');
+            
+            // Carregar dados iniciais
+            carregarDoFirebase();
+            
+            // Escutar mudanças em tempo real
+            escutarMudancas();
+            firebaseCarregado = true;
+          } catch (error) {
+            console.error('❌ Erro ao inicializar Firebase:', error);
+          }
         }
-      } catch (error) {
-        console.error('Erro ao inicializar Firebase:', error);
-        // Se Firebase falhar, carrega do localStorage
-        carregarDoLocalStorage();
-      }
-    }
+      }, 500);
+    });
 
-    // Carregar dados do Firebase (prioridade 1)
+    // Carregar dados do Firebase uma única vez
     function carregarDoFirebase() {
-      if (!database) {
-        carregarDoLocalStorage();
-        return;
-      }
+      if (!database) return;
       
       database.ref('dados').once('value', (snapshot) => {
         if (snapshot.exists()) {
@@ -633,69 +633,61 @@
           dados.entradas = dadosFirebase.entradas || [];
           dados.saidas = dadosFirebase.saidas || [];
           dados.eventos = dadosFirebase.eventos || [];
-          console.log('Dados carregados do Firebase');
+          console.log('📥 Dados carregados do Firebase:', dados);
+          atualizarTela();
+          atualizarCalendario();
         } else {
-          // Se não tem no Firebase, carrega do localStorage
-          carregarDoLocalStorage();
+          console.log('⚠️ Nenhum dado no Firebase ainda');
         }
-        atualizarTela();
-        atualizarCalendario();
       }).catch(error => {
-        console.error('Erro ao carregar do Firebase:', error);
-        carregarDoLocalStorage();
+        console.error('❌ Erro ao carregar:', error);
       });
     }
 
-    // Carregar dados do localStorage (prioridade 2 - fallback)
-    function carregarDoLocalStorage() {
-      dados.entradas = JSON.parse(localStorage.getItem('entradas') || '[]');
-      dados.saidas = JSON.parse(localStorage.getItem('saidas') || '[]');
-      dados.eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
-      console.log('Dados carregados do localStorage');
-    }
-
-    // Sincronizar para Firebase
+    // Sincronizar com Firebase
     function sincronizarParaFirebase() {
-      if (sincronizando || !database) return;
+      if (!database || !firebaseCarregado) {
+        console.log('⏳ Firebase ainda não carregado');
+        return;
+      }
+      
       sincronizando = true;
+      console.log('📤 Sincronizando com Firebase...', dados);
       
       database.ref('dados').set(dados, (error) => {
         sincronizando = false;
         if (error) {
-          console.error('Erro ao sincronizar com Firebase:', error);
+          console.error('❌ Erro ao sincronizar:', error);
         } else {
-          console.log('Dados sincronizados com Firebase');
+          console.log('✅ Sincronizado com Firebase');
         }
       });
     }
 
-    // Escutar mudanças em tempo real do Firebase
+    // Escutar mudanças em tempo real
     function escutarMudancas() {
       if (!database) return;
       
+      console.log('👂 Escutando mudanças no Firebase...');
+      
       database.ref('dados').on('value', (snapshot) => {
-        if (snapshot.exists() && !sincronizando) {
+        if (!sincronizando && snapshot.exists()) {
           const dadosFirebase = snapshot.val();
-          // Só atualiza se os dados forem diferentes
+          
+          // Verificar se dados mudaram
           if (JSON.stringify(dados) !== JSON.stringify(dadosFirebase)) {
-            console.log('Mudanças recebidas do Firebase');
+            console.log('🔄 Mudanças recebidas do Firebase!');
             dados.entradas = dadosFirebase.entradas || [];
             dados.saidas = dadosFirebase.saidas || [];
             dados.eventos = dadosFirebase.eventos || [];
+            
             atualizarTela();
             atualizarCalendario();
           }
         }
       }, (error) => {
-        console.error('Erro ao escutar mudanças:', error);
+        console.error('❌ Erro ao escutar:', error);
       });
-    }
-
-    // Inicializar quando a página carregar
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', inicializarFirebase);
-    } else {
-      inicializarFirebase();
     }
 
     function mudarAba(aba) {
@@ -710,11 +702,7 @@
     }
 
     function salvarDados() {
-      localStorage.setItem('entradas', JSON.stringify(dados.entradas));
-      localStorage.setItem('saidas', JSON.stringify(dados.saidas));
-      localStorage.setItem('eventos', JSON.stringify(dados.eventos));
-      
-      // Sincronizar com Firebase
+      // Sincronizar com Firebase (sem localStorage)
       sincronizarParaFirebase();
       
       atualizarTela();
